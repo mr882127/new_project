@@ -1,0 +1,51 @@
+####################### Samba server && nfs-sever ###########################
+
+############################# samba server ##################################
+1	dnf update -y 
+2	dnf install samba,samba-client samba-common 
+3 	vi /etc/samba/smb.conf 
+	
+	[global]
+	[global]
+  	   workgroup = WORKGROUP           # Workgroup name (Windows workgroup)
+   	   server string = Samba Server %v # Server description
+   	   netbios name = centos-server    # NetBIOS name (change as needed)
+   	  # security = user                 # Authentication type
+   	  # map to guest = bad user         # Allow guest access
+   	  # dns proxy = no
+	
+	[NewsWrap]
+        path = /NewsWrap
+        comment = NewsWrap
+        writable = yes
+        valid users = newswrap-fs
+
+
+      [finalserver]
+        path = /finalserver
+        comment = finalserver
+        writable = yes
+        valid users = newswrap-fs
+4	useradd newswrap-fs 
+5	smbpasswd -a newswrap-fs
+6	smbpasswd -e newswrap-fs
+7	chmod -R 0755 /finalserver/
+8	chmod -R 0755 /NewsWrap/
+9	chown -R newswrap-fs:newswrap-fs /NewsWrap/
+10	chown -R newswrap-fs:newswrap-fs /finalserver/
+11	systemctl enable --now smb
+12	systemctl status smb 
+
+################################ nfs-server ################################
+1)	rpm -q nfs-utils 
+2)	dnf install nfs-utils 
+3)	vi /etc/exports
+	/finalserver  *(rw,no_root_squash)
+4)	systemctl enable --now nfs-server 
+5)	systemctl status nfs-server 
+6)	systemctl status firewalld 
+7)	systemctl enable --now firewalld 
+8)	firewall-cmd --list-all 
+9)	firewall-cmd --add-services={nfs,rpc-bind,mountd} --permanent 
+10)	firewall-cmd --reload 
+11)	firewall-cmd --list-all 
